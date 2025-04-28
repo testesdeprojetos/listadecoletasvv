@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lista de Coletas</title>
+<style>
+  body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4; }
+  .team { margin-bottom: 20px; border: 1px solid #ccc; background: #fff; padding: 15px; border-radius: 8px; }
+  .empresa { margin-left: 20px; margin-top: 10px; }
+  button { padding: 10px 15px; margin: 5px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+  button:hover { background-color: #0056b3; }
+  textarea { width: 100%; height: 200px; margin-top: 10px; padding: 10px; border-radius: 8px; }
+  .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; }
+  .modal-content { background: white; padding: 20px; border-radius: 8px; width: 90%; max-width: 400px; }
+  .close { float: right; font-size: 24px; cursor: pointer; }
+  input[type=text], select { width: 100%; padding: 8px; margin-top: 5px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 5px; }
+</style>
+</head>
+<body>
+
+<h1>Lista de Coletas</h1>
+
+<div>
+  <button onclick="openModal('teamModal')">Adicionar Equipe</button>
+  <button onclick="openModal('empresaModal')">Adicionar Empresa</button>
+  <button onclick="generateList()">Gerar Lista</button>
+</div>
+
+<div id="teams"></div>
+
+<textarea id="output" placeholder="Aqui aparecerá a lista gerada..."></textarea>
+
+<!-- Modal para adicionar equipe -->
+<div id="teamModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal('teamModal')">&times;</span>
+    <h3>Adicionar Equipe</h3>
+    <select id="motorista"></select>
+    <div id="ajudantes"></div>
+    <button onclick="addTeam()">Salvar Equipe</button>
+    <button onclick="openModal('gerenciarModal')">Gerenciar Motoristas/Ajudantes</button>
+  </div>
+</div>
+
+<!-- Modal para adicionar empresa -->
+<div id="empresaModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal('empresaModal')">&times;</span>
+    <h3>Adicionar Empresa</h3>
+    <select id="teamSelect"></select>
+    <input type="text" id="nomeEmpresa" placeholder="Nome da Empresa">
+    <input type="text" id="volumes" placeholder="Quantidade de Volumes (ex: 6VL)">
+    <input type="text" id="peso" placeholder="Peso (ex: 100KG)">
+    <input type="text" id="observacao" placeholder="Observação (opcional)">
+    <button onclick="saveEmpresa()">Salvar Empresa</button>
+  </div>
+</div>
+
+<!-- Modal para gerenciar motoristas e ajudantes -->
+<div id="gerenciarModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal('gerenciarModal')">&times;</span>
+    <h3>Gerenciar Motoristas e Ajudantes</h3>
+    <h4>Motoristas</h4>
+    <ul id="listaMotoristas"></ul>
+    <input type="text" id="novoMotorista" placeholder="Novo Motorista">
+    <button onclick="addMotorista()">Adicionar Motorista</button>
+    <h4>Ajudantes</h4>
+    <ul id="listaAjudantes"></ul>
+    <input type="text" id="novoAjudante" placeholder="Novo Ajudante">
+    <button onclick="addAjudante()">Adicionar Ajudante</button>
+  </div>
+</div>
+
+<script>
+let teams = [];
+let motoristas = ['Edvaldo', 'Josinaldo', 'Wilson', 'Filipe'];
+let ajudantes = ['Roberto', 'Júlio', 'Weslley', 'Gustavo', 'André'];
+
+function openModal(id) {
+  document.getElementById(id).style.display = 'flex';
+  if (id === 'empresaModal') {
+    renderTeamSelect();
+    setupEnterNavigation();
+  }
+  if (id === 'teamModal') renderMotoristaAjudantes();
+  if (id === 'gerenciarModal') renderGerenciarListas();
+}
+
+function closeModal(id) {
+  document.getElementById(id).style.display = 'none';
+}
+
+function renderMotoristaAjudantes() {
+  const motoristaSelect = document.getElementById('motorista');
+  const ajudantesDiv = document.getElementById('ajudantes');
+
+  motoristaSelect.innerHTML = '';
+  ajudantesDiv.innerHTML = '';
+
+  motoristas.forEach(m => {
+    const option = document.createElement('option');
+    option.value = m;
+    option.textContent = m;
+    motoristaSelect.appendChild(option);
+  });
+
+  ajudantes.forEach(a => {
+    const label = document.createElement('label');
+    label.style.display = 'block';
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.value = a;
+    label.appendChild(checkbox);
+    label.append(' ' + a);
+    ajudantesDiv.appendChild(label);
+  });
+}
+
+function renderGerenciarListas() {
+  const listaMotoristas = document.getElementById('listaMotoristas');
+  const listaAjudantes = document.getElementById('listaAjudantes');
+
+  listaMotoristas.innerHTML = '';
+  motoristas.forEach((m, idx) => {
+    listaMotoristas.innerHTML += `<li>${m} <button onclick="removerMotorista(${idx})">Remover</button></li>`;
+  });
+
+  listaAjudantes.innerHTML = '';
+  ajudantes.forEach((a, idx) => {
+    listaAjudantes.innerHTML += `<li>${a} <button onclick="removerAjudante(${idx})">Remover</button></li>`;
+  });
+}
+
+function addMotorista() {
+  const novo = document.getElementById('novoMotorista').value.trim();
+  if (novo) motoristas.push(novo);
+  document.getElementById('novoMotorista').value = '';
+  renderGerenciarListas();
+}
+
+function addAjudante() {
+  const novo = document.getElementById('novoAjudante').value.trim();
+  if (novo) ajudantes.push(novo);
+  document.getElementById('novoAjudante').value = '';
+  renderGerenciarListas();
+}
+
+function removerMotorista(idx) {
+  motoristas.splice(idx, 1);
+  renderGerenciarListas();
+}
+
+function removerAjudante(idx) {
+  ajudantes.splice(idx, 1);
+  renderGerenciarListas();
+}
+
+function addTeam() {
+  const motorista = document.getElementById('motorista').value;
+  const selectedAjudantes = Array.from(document.getElementById('ajudantes').querySelectorAll('input:checked')).map(cb => cb.value);
+  if (!motorista || selectedAjudantes.length === 0) { alert('Preencha todos os campos!'); return; }
+
+  for (const team of teams) {
+    if (team.motoristas === motorista || motorista === team.motoristas) {
+      alert('Este motorista já está em uma equipe!');
+      return;
+    }
+    for (const aj of selectedAjudantes) {
+      if (team.ajudantes.split(' - ').includes(aj)) {
+        alert(`O ajudante ${aj} já está em uma equipe!`);
+        return;
+      }
+    }
+  }
+
+  teams.push({ motoristas: motorista, ajudantes: selectedAjudantes.join(' - '), empresas: [] });
+  closeModal('teamModal');
+  renderTeams();
+}
+
+function renderTeamSelect() {
+  const select = document.getElementById('teamSelect');
+  select.innerHTML = '';
+  teams.forEach((team, index) => {
+    const option = document.createElement('option');
+    option.value = index;
+    option.textContent = `${team.motoristas} - ${team.ajudantes}`;
+    select.appendChild(option);
+  });
+}
+
+function saveEmpresa() {
+  const index = document.getElementById('teamSelect').value;
+  const nome = document.getElementById('nomeEmpresa').value.trim();
+  const volumes = document.getElementById('volumes').value.trim();
+  const peso = document.getElementById('peso').value.trim();
+  const obs = document.getElementById('observacao').value.trim();
+
+  if (nome === '') { alert('Nome da empresa é obrigatório!'); return; }
+
+  teams[index].empresas.push({ nome, volumes, peso, obs });
+
+  document.getElementById('nomeEmpresa').value = '';
+  document.getElementById('volumes').value = '';
+  document.getElementById('peso').value = '';
+  document.getElementById('observacao').value = '';
+  document.getElementById('nomeEmpresa').focus();
+  renderTeams();
+}
+
+function setupEnterNavigation() {
+  const fields = ['teamSelect', 'nomeEmpresa', 'volumes', 'peso', 'observacao'];
+  fields.forEach((id, idx) => {
+    const element = document.getElementById(id);
+    element.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (idx < fields.length - 1) {
+          document.getElementById(fields[idx + 1]).focus();
+        } else {
+          saveEmpresa();
+        }
+      }
+    });
+  });
+}
+
+function renderTeams() {
+  const teamsDiv = document.getElementById('teams');
+  teamsDiv.innerHTML = '';
+
+  teams.forEach((team, index) => {
+    const div = document.createElement('div');
+    div.className = 'team';
+    div.innerHTML = `
+      <strong>Equipe ${index + 1}</strong><br>
+      Motorista: ${team.motoristas}<br>
+      Ajudantes: ${team.ajudantes}<br>
+      <div class="empresa">
+        ${team.empresas.map(emp => `- ${emp.nome}${emp.volumes ? ' ' + emp.volumes : ''}${emp.peso ? ' ' + emp.peso : ''}${emp.obs ? ' (' + emp.obs + ')' : ''}`).join('<br>')}
+      </div>
+    `;
+    teamsDiv.appendChild(div);
+  });
+}
+
+function generateList() {
+  const output = document.getElementById('output');
+  const today = new Date();
+  const dateStr = today.toLocaleDateString('pt-BR');
+
+  let text = `COLETAS DO DIA ${dateStr} atualizadas:\n\n`;
+
+  teams.forEach(team => {
+    text += `${team.motoristas} - ${team.ajudantes}\n\n`;
+    team.empresas.forEach(emp => {
+      text += `- ${emp.nome}${emp.volumes ? ' ' + emp.volumes : ''}${emp.peso ? ' ' + emp.peso : ''}${emp.obs ? ' (' + emp.obs + ')' : ''}\n`;
+    });
+    text += `\n`;
+  });
+
+  output.value = text;
+}
+</script>
+
+</body>
+</html>
