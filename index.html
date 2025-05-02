@@ -1,124 +1,39 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Lista de Coletas</title>
-<style>
-  :root {
-    --bg-color: #f4f4f4;
-    --text-color: #000;
-    --card-color: #fff;
-  }
-  .dark-theme {
-    --bg-color: #121212;
-    --text-color: #fff;
-    --card-color: #1e1e1e;
-  }
-  body {
-    font-family: Arial, sans-serif;
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    margin: 0;
-    padding: 20px;
-    transition: background 0.3s, color 0.3s;
-  }
-  h1 {
-    margin-top: 0;
-  }
-  .top-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  button {
-    padding: 10px 15px;
-    margin: 5px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  button:hover {
-    background-color: #0056b3;
-  }
-  .team, .empresa {
-    background: var(--card-color);
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    margin-top: 10px;
-    padding: 10px;
-  }
-  textarea {
-    width: 100%;
-    height: 250px;
-    margin-top: 15px;
-    border-radius: 8px;
-    padding: 10px;
-  }
-  .modal {
-    display: none;
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(0,0,0,0.5);
-    justify-content: center;
-    align-items: center;
-    animation: fadeIn 0.3s forwards;
-  }
-  .modal-content {
-    background: var(--card-color);
-    padding: 20px;
-    border-radius: 10px;
-    width: 90%;
-    max-width: 400px;
-    animation: slideIn 0.3s forwards;
-  }
-  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-  @keyframes slideIn { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-  .close { float: right; font-size: 24px; cursor: pointer; }
-  input, select {
-    width: 100%;
-    padding: 8px;
-    margin-top: 8px;
-    margin-bottom: 12px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lista de Coletas</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="top-bar">
-  <h1>Lista de Coletas</h1>
-  <button onclick="toggleTheme()">Alternar Tema</button>
-</div>
+<h1>Lista de Coletas</h1>
 
 <div>
   <button onclick="openModal('teamModal')">Adicionar Equipe</button>
   <button onclick="openModal('empresaModal')">Adicionar Empresa</button>
   <button onclick="generateList()">Gerar Lista</button>
+  <button id="toggleTheme" style="float:right">Alternar Tema</button>
 </div>
 
 <div id="teams"></div>
 
-<textarea id="output" placeholder="Lista gerada..."></textarea>
+<textarea id="output" placeholder="Aqui aparecerá a lista gerada..."></textarea>
 
-<!-- Modais -->
+<!-- Modal para adicionar equipe -->
 <div id="teamModal" class="modal">
   <div class="modal-content">
     <span class="close" onclick="closeModal('teamModal')">&times;</span>
     <h3>Adicionar Equipe</h3>
     <select id="motorista"></select>
-    <select id="ajudantes" multiple size="5"></select>
-    <div style="margin-top:10px;">
-      <button onclick="openModal('gerenciarModal')">Gerenciar Motoristas/Ajudantes</button>
-      <button onclick="addTeam()">Salvar Equipe</button>
-    </div>
+    <div id="ajudantes"></div>
+    <button onclick="addTeam()">Salvar Equipe</button>
+    <button onclick="closeModal('teamModal')">Fechar</button>
   </div>
 </div>
 
+<!-- Modal para adicionar empresa -->
 <div id="empresaModal" class="modal">
   <div class="modal-content">
     <span class="close" onclick="closeModal('empresaModal')">&times;</span>
@@ -129,166 +44,36 @@
     <input type="text" id="peso" placeholder="Peso (KG)">
     <input type="text" id="observacao" placeholder="Observação (opcional)">
     <button onclick="saveEmpresa()">Salvar Empresa</button>
+    <button onclick="closeModal('empresaModal')">Fechar</button>
   </div>
 </div>
 
-<div id="gerenciarModal" class="modal">
+<!-- Modal para trocar integrantes -->
+<div id="trocarModal" class="modal">
   <div class="modal-content">
-    <span class="close" onclick="closeModal('gerenciarModal')">&times;</span>
-    <h3>Gerenciar Motoristas e Ajudantes</h3>
-    <h4>Motoristas</h4>
-    <ul id="listaMotoristas"></ul>
-    <input type="text" id="novoMotorista" placeholder="Novo Motorista">
-    <button onclick="addMotorista()">Adicionar Motorista</button>
-    <h4>Ajudantes</h4>
-    <ul id="listaAjudantes"></ul>
-    <input type="text" id="novoAjudante" placeholder="Novo Ajudante">
-    <button onclick="addAjudante()">Adicionar Ajudante</button>
+    <span class="close" onclick="closeModal('trocarModal')">&times;</span>
+    <h3>Trocar Integrante de Equipe</h3>
+    <select id="pessoaTroca"></select>
+    <select id="novaEquipe"></select>
+    <button onclick="moverIntegrante()">Mover</button>
+    <button onclick="closeModal('trocarModal')">Fechar</button>
   </div>
 </div>
 
-<script>
-let teams = JSON.parse(localStorage.getItem('teams')) || [];
-let motoristas = JSON.parse(localStorage.getItem('motoristas')) || ['Edvaldo', 'Josinaldo', 'Wilson', 'Filipe'];
-let ajudantes = JSON.parse(localStorage.getItem('ajudantes')) || ['Roberto', 'Júlio', 'Weslley', 'Gustavo', 'André'];
-let darkMode = localStorage.getItem('darkMode') === 'true';
+<!-- Modal para confirmação de exclusão de equipe -->
+<div id="confirmDeleteModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal('confirmDeleteModal')">&times;</span>
+    <h3>Tem certeza que deseja excluir esta equipe?</h3>
+    <button onclick="deleteEquipe()">Sim, Excluir</button>
+    <button onclick="closeModal('confirmDeleteModal')">Cancelar</button>
+  </div>
+</div>
 
-document.body.classList.toggle('dark-theme', darkMode);
+<button onclick="limparTudo()">Limpar Tudo</button>
 
-function openModal(id) {
-  document.getElementById(id).style.display = 'flex';
-  populateSelects();
-}
 
-function closeModal(id) {
-  document.getElementById(id).style.display = 'none';
-}
 
-function populateSelects() {
-  const motoristaSelect = document.getElementById('motorista');
-  const ajudantesSelect = document.getElementById('ajudantes');
-  const teamSelect = document.getElementById('teamSelect');
-  
-  motoristaSelect.innerHTML = motoristas.map(m => `<option>${m}</option>`).join('');
-  ajudantesSelect.innerHTML = ajudantes.map(a => `<option>${a}</option>`).join('');
-  teamSelect.innerHTML = teams.map((t, i) => `<option value="${i}">${t.motorista}</option>`).join('');
-  
-  renderGerenciar();
-}
-
-function renderGerenciar() {
-  document.getElementById('listaMotoristas').innerHTML = motoristas.map((m, i) => `<li>${m} <button onclick="removeMotorista(${i})">Remover</button></li>`).join('');
-  document.getElementById('listaAjudantes').innerHTML = ajudantes.map((a, i) => `<li>${a} <button onclick="removeAjudante(${i})">Remover</button></li>`).join('');
-}
-
-function addMotorista() {
-  const nome = document.getElementById('novoMotorista').value.trim();
-  if (nome) {
-    motoristas.push(nome);
-    localStorage.setItem('motoristas', JSON.stringify(motoristas));
-    document.getElementById('novoMotorista').value = '';
-    populateSelects();
-  }
-}
-
-function addAjudante() {
-  const nome = document.getElementById('novoAjudante').value.trim();
-  if (nome) {
-    ajudantes.push(nome);
-    localStorage.setItem('ajudantes', JSON.stringify(ajudantes));
-    document.getElementById('novoAjudante').value = '';
-    populateSelects();
-  }
-}
-
-function removeMotorista(index) {
-  motoristas.splice(index, 1);
-  localStorage.setItem('motoristas', JSON.stringify(motoristas));
-  populateSelects();
-}
-
-function removeAjudante(index) {
-  ajudantes.splice(index, 1);
-  localStorage.setItem('ajudantes', JSON.stringify(ajudantes));
-  populateSelects();
-}
-
-function addTeam() {
-  const motorista = document.getElementById('motorista').value;
-  const ajudantesSelected = Array.from(document.getElementById('ajudantes').selectedOptions).map(opt => opt.value);
-  
-  if (!motorista || ajudantesSelected.length === 0) {
-    alert('Selecione motorista e ajudantes!');
-    return;
-  }
-  
-  // Verificar duplicidade
-  if (teams.some(t => t.motorista === motorista || t.ajudantes.some(a => ajudantesSelected.includes(a)))) {
-    alert('Motorista ou ajudante já está em outra equipe!');
-    return;
-  }
-  
-  teams.push({ motorista, ajudantes: ajudantesSelected, empresas: [] });
-  localStorage.setItem('teams', JSON.stringify(teams));
-  closeModal('teamModal');
-  renderTeams();
-}
-
-function saveEmpresa() {
-  const index = document.getElementById('teamSelect').value;
-  const nome = document.getElementById('nomeEmpresa').value.trim();
-  const volumes = document.getElementById('volumes').value.trim();
-  const peso = document.getElementById('peso').value.trim();
-  const obs = document.getElementById('observacao').value.trim();
-
-  if (!nome) {
-    alert('Nome da empresa obrigatório!');
-    return;
-  }
-  
-  teams[index].empresas.push({ nome, volumes, peso, obs });
-  localStorage.setItem('teams', JSON.stringify(teams));
-  
-  document.getElementById('nomeEmpresa').value = '';
-  document.getElementById('volumes').value = '';
-  document.getElementById('peso').value = '';
-  document.getElementById('observacao').value = '';
-  
-  renderTeams();
-}
-
-function renderTeams() {
-  const div = document.getElementById('teams');
-  div.innerHTML = '';
-  teams.forEach((t, i) => {
-    const empresasHtml = t.empresas.map(emp => `<div class="empresa">- ${emp.nome.toUpperCase()}${emp.volumes ? ' ' + emp.volumes + ' VOL' : ''}${emp.peso ? ' ' + emp.peso + ' KG' : ''}${emp.obs ? ' (' + emp.obs.toUpperCase() + ')' : ''}</div>`).join('');
-    div.innerHTML += `<div class="team"><strong>${t.motorista.toUpperCase()} - ${t.ajudantes.join(' - ').toUpperCase()}</strong>${empresasHtml}</div>`;
-  });
-}
-
-function generateList() {
-  const output = document.getElementById('output');
-  const today = new Date();
-  const dateStr = today.toLocaleDateString('pt-BR');
-  
-  let text = `COLETAS DO DIA ${dateStr.toUpperCase()} ATUALIZADAS:\n\n`;
-  
-  teams.forEach(t => {
-    text += `${t.motorista.toUpperCase()} - ${t.ajudantes.join(' - ').toUpperCase()}\n\n`;
-    t.empresas.forEach(emp => {
-      text += `- ${emp.nome.toUpperCase()}${emp.volumes ? ` ${emp.volumes} VOL` : ''}${emp.peso ? ` ${emp.peso} KG` : ''}${emp.obs ? ` (${emp.obs.toUpperCase()})` : ''}\n`;
-    });
-    text += `\n`;
-  });
-  
-  output.value = text;
-}
-
-function toggleTheme() {
-  document.body.classList.toggle('dark-theme');
-  localStorage.setItem('darkMode', document.body.classList.contains('dark-theme'));
-}
-
-</script>
+<script src="./script.js"></script>
 </body>
 </html>
