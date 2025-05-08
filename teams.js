@@ -1,6 +1,6 @@
 
 let motoristas = ['Edvaldo', 'Josinaldo', 'Wilson', 'Filipe'];
-let ajudantes = ['Roberto', 'Júlio', 'Weslley', 'Gustavo', 'André'];
+let ajudantes = ['Roberto', 'Weslley', 'Gustavo', 'André', 'Tiago'];
 let equipes = [];
 
 function renderMotoristas() {
