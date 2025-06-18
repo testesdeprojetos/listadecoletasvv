@@ -73,10 +73,6 @@ function renderAjudantes() {
 function addTeam() {
   const motorista = document.getElementById('motorista').value;
   const ajudantesSelecionados = Array.from(document.querySelectorAll('#ajudantes input:checked')).map(el => el.value);
-  if (!motorista || ajudantesSelecionados.length === 0) {
-    alert('Selecione um motorista e ao menos um ajudante.');
-    return;
-  }
 
   const pessoas = [motorista, ...ajudantesSelecionados];
   const usados = equipes.flatMap(eq => [eq.motorista, ...eq.ajudantes]);
