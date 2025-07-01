@@ -1,6 +1,6 @@
 // Variáveis globais
 let motoristas = ['Edvaldo', 'Josinaldo', 'Wilson', 'Filipe'];
-let ajudantes = ['Roberto', 'Weslley', 'Gustavo', 'André', 'Tiago'];
+let ajudantes = ['Roberto', 'Aldivânio', 'Gustavo', 'André', 'Tiago', 'Williams'];
 let equipes = [];
 
 // Tema
