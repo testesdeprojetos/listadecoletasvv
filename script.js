@@ -138,7 +138,7 @@ function renderTeams() {
       }
       
       empresa.innerHTML = `
-        <p>${empresaTexto}</p>
+        <p contenteditable="true">${empresaTexto}</p>
         <button id="deleteButton" onclick="deleteEmpresa(${i}, ${j})">Excluir</button>
       `;
       empresasDiv.appendChild(empresa);
