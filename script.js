@@ -221,8 +221,20 @@ function saveEmpresa() {
 
 // ===== Utilidades =====
 function openModal(id) {
+  if (id === 'teamModal') {
+    if (motoristas.length === 0 || ajudantes.length === 0) {
+      alert('Carregando motoristas e ajudantes... aguarde um instante e tente novamente.');
+      return;
+    }
+  }
+
   document.getElementById(id).style.display = 'flex';
+
+  if (id === 'empresaModal') {
+    setTimeout(() => document.getElementById('nomeEmpresa').focus(), 100);
+  }
 }
+
 function closeModal(id) {
   document.getElementById(id).style.display = 'none';
 }
