@@ -165,3 +165,58 @@ input[type="text"], select {
 #deleteButton:hover {
   background-color: #c82333;
 }
+
+/* Modal layout básico */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 999;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5);
+  align-items: center;
+  justify-content: center;
+}
+.modal-content {
+  background: white;
+  padding: 20px;
+  max-width: 800px;
+  width: 90%;
+  border-radius: 8px;
+}
+
+/* Estilo visual dos blocos de equipes */
+.troca-container {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+.equipe-box {
+  border: 1px solid #aaa;
+  border-radius: 8px;
+  padding: 10px;
+  width: 30%;
+}
+.equipe-box h3 {
+  margin-top: 0;
+  font-size: 16px;
+  text-align: center;
+}
+.ajudante-bloco {
+  background: #f0f0f0;
+  padding: 6px 10px;
+  margin: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: center;
+  transition: background 0.2s, opacity 0.2s;
+}
+.ajudante-bloco:hover {
+  background: #dcdcdc;
+}
+.ajudante-bloco.selecionado {
+  opacity: 0.5;
+  background: #ffe9a1;
+}
+
