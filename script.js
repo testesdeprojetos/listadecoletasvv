@@ -1,6 +1,7 @@
 // ===== URLs da planilha do Google Sheets =====
-const URL_MOTORISTAS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR3NUMEPqhTxi5kCMW6kDV4stJyqhMyni_mRTvGLEZHJJCO7BIJ0Hk_dcjljp9L_ZOwqy_XLxbuvg8m/gviz/tq?sheet=Motoristas&tq=select%20A";
-const URL_AJUDANTES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR3NUMEPqhTxi5kCMW6kDV4stJyqhMyni_mRTvGLEZHJJCO7BIJ0Hk_dcjljp9L_ZOwqy_XLxbuvg8m/gviz/tq?sheet=Ajudantes&tq=select%20A";
+const URL_MOTORISTAS = "https://docs.google.com/spreadsheets/d/12WODF9lWXjb1SDYeWN1lG0v1mxK2R4g-z-aCVHb2NMo/gviz/tq?tqx=out:json&tq=SELECT+A&sheet=Motoristas";
+const URL_AJUDANTES = "https://docs.google.com/spreadsheets/d/12WODF9lWXjb1SDYeWN1lG0v1mxK2R4g-z-aCVHb2NMo/gviz/tq?tqx=out:json&tq=SELECT+A&sheet=Ajudantes";
+
 
 // ===== Variáveis globais =====
 let motoristas = [];
@@ -27,12 +28,38 @@ async function carregarLista(url) {
 }
 
 async function carregarDados() {
-  motoristas = await carregarLista(URL_MOTORISTAS);
-  ajudantes = await carregarLista(URL_AJUDANTES);
-  renderMotoristas();
-  renderAjudantes();
+  try {
+    const [dadosMotoristas, dadosAjudantes] = await Promise.all([
+      carregarLista(URL_MOTORISTAS),
+      carregarLista(URL_AJUDANTES)
+    ]);
+
+    motoristas = dadosMotoristas;
+    ajudantes = dadosAjudantes;
+
+    if (motoristas.length === 0 || ajudantes.length === 0) {
+      alert('Erro ao carregar dados da planilha. Verifique se os dados estão preenchidos corretamente.');
+      return;
+    }
+
+    renderMotoristas();
+    renderAjudantes();
+
+    // Apenas mostrar o botão depois do carregamento
+    const botaoEquipe = document.getElementById('botaoAdicionarEquipe');
+    if (botaoEquipe) botaoEquipe.style.display = 'inline-block';
+
+  } catch (error) {
+    console.error("Erro ao carregar dados das planilhas:", error);
+    alert('Erro ao carregar os dados dos motoristas e ajudantes.');
+  }
 }
+
 carregarDados();
+
+console.log("Motoristas carregados:", motoristas);
+console.log("Ajudantes carregados:", ajudantes);
+
 
 // ===== Renderização =====
 function renderMotoristas() {
@@ -45,15 +72,6 @@ function renderMotoristas() {
     opt.textContent = m;
     select.appendChild(opt);
   });
-
-  const optOutro = document.createElement('option');
-  optOutro.value = 'outro';
-  optOutro.textContent = 'Outro';
-  select.appendChild(optOutro);
-
-  select.onchange = () => {
-    document.getElementById('motoristaOutro').style.display = select.value === 'outro' ? 'block' : 'none';
-  };
 }
 
 function renderAjudantes() {
@@ -65,21 +83,12 @@ function renderAjudantes() {
     div.appendChild(label);
     div.appendChild(document.createElement('br'));
   });
-
-  div.insertAdjacentHTML('beforeend', `
-    <label><input type="checkbox" id="ajudanteOutroCheck"> Outro</label><br>
-    <input type="text" id="ajudanteOutroInput" placeholder="Nome do ajudante" style="display:none;">
-  `);
-
-  document.getElementById('ajudanteOutroCheck').addEventListener('change', (e) => {
-    document.getElementById('ajudanteOutroInput').style.display = e.target.checked ? 'block' : 'none';
-  });
 }
 
 // ===== Adicionar Equipe =====
 function addTeam() {
   const motoristaSelecionado = document.getElementById('motorista').value;
-  const motoristaOutro = document.getElementById('motoristaOutro').value.trim();
+  const motoristaOutro = document.getElementById('outroMotorista').value.trim();
   const motorista = motoristaSelecionado === 'outro' ? motoristaOutro : motoristaSelecionado;
 
   const ajudantesSelecionados = Array.from(document.querySelectorAll('#ajudantes input[type="checkbox"]:checked')).map(el => el.value);
@@ -233,6 +242,23 @@ function openModal(id) {
   if (id === 'empresaModal') {
     setTimeout(() => document.getElementById('nomeEmpresa').focus(), 100);
   }
+
+  if (id === 'teamModal') {
+  if (motoristas.length === 0 || ajudantes.length === 0) {
+    alert('Carregando motoristas e ajudantes... aguarde um instante e tente novamente.');
+    return;
+  }
+
+  // Só adiciona o listener agora que os elementos estão garantidos no DOM
+  const checkOutro = document.getElementById('ajudanteOutroCheck');
+  const inputOutro = document.getElementById('ajudanteOutroInput');
+  if (checkOutro && inputOutro) {
+    checkOutro.addEventListener('change', (e) => {
+      inputOutro.style.display = e.target.checked ? 'block' : 'none';
+    });
+  }
+}
+
 }
 
 function closeModal(id) {
