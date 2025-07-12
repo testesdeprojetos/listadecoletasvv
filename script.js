@@ -1,4 +1,3 @@
-
 // ===== URLs da planilha do Google Sheets =====
 const URL_MOTORISTAS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR3NUMEPqhTxi5kCMW6kDV4stJyqhMyni_mRTvGLEZHJJCO7BIJ0Hk_dcjljp9L_ZOwqy_XLxbuvg8m/gviz/tq?sheet=Motoristas&tq=select%20A";
 const URL_AJUDANTES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR3NUMEPqhTxi5kCMW6kDV4stJyqhMyni_mRTvGLEZHJJCO7BIJ0Hk_dcjljp9L_ZOwqy_XLxbuvg8m/gviz/tq?sheet=Ajudantes&tq=select%20A";
@@ -35,7 +34,7 @@ async function carregarDados() {
 }
 carregarDados();
 
-// ===== Renderização dinâmica =====
+// ===== Renderização =====
 function renderMotoristas() {
   const select = document.getElementById('motorista');
   select.innerHTML = '';
@@ -47,7 +46,6 @@ function renderMotoristas() {
     select.appendChild(opt);
   });
 
-  // Campo "Outro"
   const optOutro = document.createElement('option');
   optOutro.value = 'outro';
   optOutro.textContent = 'Outro';
@@ -68,39 +66,32 @@ function renderAjudantes() {
     div.appendChild(document.createElement('br'));
   });
 
-  // Campo "Outro"
-  const outroHTML = `
+  div.insertAdjacentHTML('beforeend', `
     <label><input type="checkbox" id="ajudanteOutroCheck"> Outro</label><br>
     <input type="text" id="ajudanteOutroInput" placeholder="Nome do ajudante" style="display:none;">
-  `;
-  div.insertAdjacentHTML('beforeend', outroHTML);
+  `);
 
   document.getElementById('ajudanteOutroCheck').addEventListener('change', (e) => {
     document.getElementById('ajudanteOutroInput').style.display = e.target.checked ? 'block' : 'none';
   });
 }
 
-// ===== Adicionar equipe =====
+// ===== Adicionar Equipe =====
 function addTeam() {
   const motoristaSelecionado = document.getElementById('motorista').value;
   const motoristaOutro = document.getElementById('motoristaOutro').value.trim();
   const motorista = motoristaSelecionado === 'outro' ? motoristaOutro : motoristaSelecionado;
 
-  const ajudantesSelecionados = Array.from(document.querySelectorAll('#ajudantes input[type="checkbox"]:checked'))
-    .map(el => el.value);
-
-  const ajudanteOutroCheck = document.getElementById('ajudanteOutroCheck').checked;
-  const ajudanteOutroNome = document.getElementById('ajudanteOutroInput').value.trim();
-  if (ajudanteOutroCheck && ajudanteOutroNome) ajudantesSelecionados.push(ajudanteOutroNome);
-
-  if (!motorista || ajudantesSelecionados.length === 0) {
-    alert('Selecione um motorista e ao menos um ajudante.');
-    return;
+  const ajudantesSelecionados = Array.from(document.querySelectorAll('#ajudantes input[type="checkbox"]:checked')).map(el => el.value);
+  if (document.getElementById('ajudanteOutroCheck').checked) {
+    const nome = document.getElementById('ajudanteOutroInput').value.trim();
+    if (nome) ajudantesSelecionados.push(nome);
   }
 
+  if (!motorista || ajudantesSelecionados.length === 0) return alert("Selecione um motorista e pelo menos um ajudante.");
+
   const usados = equipes.flatMap(eq => [eq.motorista, ...eq.ajudantes]);
-  const todos = [motorista, ...ajudantesSelecionados];
-  const duplicado = todos.find(p => usados.includes(p));
+  const duplicado = [motorista, ...ajudantesSelecionados].find(p => usados.includes(p));
   if (duplicado) return alert(`Pessoa já usada: ${duplicado}`);
 
   equipes.push({ motorista, ajudantes: ajudantesSelecionados, empresas: [] });
@@ -110,11 +101,10 @@ function addTeam() {
   saveToLocalStorage();
 }
 
-// ===== Renderizar equipes =====
+// ===== Renderizar Equipes =====
 function renderTeams() {
   const div = document.getElementById('teams');
   div.innerHTML = '';
-
   equipes.forEach((equipe, i) => {
     const container = document.createElement('div');
     container.className = 'team';
@@ -129,14 +119,16 @@ function renderTeams() {
     const empresasDiv = document.createElement('div');
     empresasDiv.id = `empresas-${i}`;
     equipe.empresas.forEach((emp, j) => {
-      const empresa = document.createElement('div');
-      empresa.className = 'empresa';
       let texto = `- ${emp.nomeEmpresa}`;
       if (emp.volumes) texto += ` ${emp.volumes}VL`;
       if (emp.peso) texto += ` ${emp.peso}KG`;
       if (emp.observacao) texto += ` (${emp.observacao})`;
-      empresa.innerHTML = `<p>${texto}</p><button onclick="deleteEmpresa(${i}, ${j})">Excluir</button>`;
-      empresasDiv.appendChild(empresa);
+      empresasDiv.innerHTML += `
+        <div class="empresa">
+          <p contenteditable="true">${texto}</p>
+          <button onclick="deleteEmpresa(${i}, ${j})">Excluir</button>
+        </div>
+      `;
     });
 
     container.appendChild(header);
@@ -145,10 +137,12 @@ function renderTeams() {
   });
 }
 
-// ===== Trocar ajudantes visualmente =====
+// ===== Modal Visual: Trocar Ajudantes =====
 function abrirTrocaVisual() {
-  const modal = document.getElementById('trocarVisual');
+  const modal = document.getElementById('trocarModalVisual');
   modal.innerHTML = '';
+  ajudanteSelecionado = null;
+
   equipes.forEach((equipe, index) => {
     const bloco = document.createElement('div');
     bloco.className = 'blocoEquipe';
@@ -180,19 +174,49 @@ function selecionarOuMoverAjudante(nome, equipeIndex) {
     });
   } else {
     if (ajudanteSelecionado.nome === nome) return;
+    if (ajudanteSelecionado.equipeIndex === equipeIndex) return;
+
     const origem = ajudanteSelecionado.equipeIndex;
     const destino = equipeIndex;
-    if (origem === destino) return;
 
-    const aj = equipes[origem].ajudantes;
-    equipes[origem].ajudantes = aj.filter(a => a !== ajudanteSelecionado.nome);
+    equipes[origem].ajudantes = equipes[origem].ajudantes.filter(a => a !== ajudanteSelecionado.nome);
     equipes[destino].ajudantes.push(ajudanteSelecionado.nome);
-    ajudanteSelecionado = null;
 
+    ajudanteSelecionado = null;
     closeModal('trocarModalVisual');
     renderTeams();
     saveToLocalStorage();
   }
+}
+
+// ===== Empresa - Campos =====
+const camposEmpresa = ['nomeEmpresa', 'volumes', 'peso', 'observacao'];
+camposEmpresa.forEach((id, index) => {
+  const campo = document.getElementById(id);
+  campo.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (index === camposEmpresa.length - 1) saveEmpresa();
+      else document.getElementById(camposEmpresa[index + 1]).focus();
+    }
+  });
+});
+
+function saveEmpresa() {
+  const equipeIndex = +document.getElementById('teamSelect').value;
+  const nomeEmpresa = document.getElementById('nomeEmpresa').value.trim();
+  const volumes = document.getElementById('volumes').value.trim();
+  const peso = document.getElementById('peso').value.trim();
+  const observacao = document.getElementById('observacao').value.trim();
+
+  if (!nomeEmpresa || isNaN(equipeIndex)) return alert('Preencha os campos corretamente.');
+
+  equipes[equipeIndex].empresas.push({ nomeEmpresa, volumes, peso, observacao });
+  renderTeams();
+  saveToLocalStorage();
+
+  camposEmpresa.forEach(id => document.getElementById(id).value = '');
+  document.getElementById('nomeEmpresa').focus();
 }
 
 // ===== Utilidades =====
@@ -208,8 +232,8 @@ function openConfirmDeleteModal(i) {
 }
 function deleteEquipe() {
   equipes.splice(window.equipeToDeleteIndex, 1);
-  closeModal('confirmDeleteModal');
   renderTeams();
+  closeModal('confirmDeleteModal');
   saveToLocalStorage();
 }
 function deleteEmpresa(i, j) {
@@ -227,77 +251,35 @@ function updateTeamSelect() {
     sel.appendChild(opt);
   });
 }
+function generateList() {
+  const hoje = new Date().toLocaleDateString('pt-BR');
+  let texto = `COLETAS DO DIA ${hoje} ATUALIZADAS:\n\n`;
+  equipes.forEach(equipe => {
+    texto += `${equipe.motorista} - ${equipe.ajudantes.join(' - ')}\n\n`;
+    equipe.empresas.forEach(emp => {
+      let linha = `- ${emp.nomeEmpresa}`;
+      if (emp.volumes) linha += ` ${emp.volumes}VL`;
+      if (emp.peso) linha += ` ${emp.peso}KG`;
+      if (emp.observacao) linha += ` (${emp.observacao})`;
+      texto += `${linha}\n`;
+    });
+    texto += `\n`;
+  });
+  document.getElementById('output').value = texto.toUpperCase();
+}
+function limparTudo() {
+  if (confirm("Tem certeza que deseja apagar todos os dados?")) {
+    localStorage.clear();
+    location.reload();
+  }
+}
 function saveToLocalStorage() {
   localStorage.setItem('equipes', JSON.stringify(equipes));
 }
+
+// ===== Inicialização =====
 if (localStorage.getItem('equipes')) {
   equipes = JSON.parse(localStorage.getItem('equipes'));
-  renderTeams();
-  updateTeamSelect();
 }
-
-let ajudanteSelecionado = null;
-let equipeOrigemIndex = null;
-
-function openTrocarModalVisual() {
-  const container = document.getElementById('trocarVisualContainer');
-  container.innerHTML = ''; // limpa tudo
-
-  equipes.forEach((equipe, index) => {
-    const equipeDiv = document.createElement('div');
-    equipeDiv.className = 'equipe-box';
-    equipeDiv.dataset.index = index;
-
-    const titulo = document.createElement('h3');
-    titulo.textContent = equipe.motorista;
-    equipeDiv.appendChild(titulo);
-
-    equipe.ajudantes.forEach(ajudante => {
-      const bloco = document.createElement('div');
-      bloco.className = 'ajudante-bloco';
-      bloco.textContent = ajudante;
-
-      bloco.addEventListener('click', () => {
-        // Se já selecionado, desmarca
-        if (ajudanteSelecionado === ajudante) {
-          ajudanteSelecionado = null;
-          equipeOrigemIndex = null;
-          document.querySelectorAll('.ajudante-bloco').forEach(b => b.classList.remove('selecionado'));
-        } else {
-          ajudanteSelecionado = ajudante;
-          equipeOrigemIndex = index;
-          document.querySelectorAll('.ajudante-bloco').forEach(b => b.classList.remove('selecionado'));
-          bloco.classList.add('selecionado');
-        }
-      });
-
-      equipeDiv.appendChild(bloco);
-    });
-
-    equipeDiv.addEventListener('click', () => {
-      if (ajudanteSelecionado !== null && equipeOrigemIndex !== null && index !== equipeOrigemIndex) {
-        const equipeOrigem = equipes[equipeOrigemIndex];
-        const equipeDestino = equipes[index];
-
-        // Remover da equipe de origem
-        equipeOrigem.ajudantes = equipeOrigem.ajudantes.filter(a => a !== ajudanteSelecionado);
-        // Adicionar à equipe de destino
-        equipeDestino.ajudantes.push(ajudanteSelecionado);
-
-        // Limpar seleção
-        ajudanteSelecionado = null;
-        equipeOrigemIndex = null;
-
-        // Atualizar interface
-        renderTeams();
-        openTrocarModalVisual(); // recarrega o modal atualizado
-        saveToLocalStorage();
-      }
-    });
-
-    container.appendChild(equipeDiv);
-  });
-
-  openModal('trocarModalVisual');
-}
-
+renderTeams();
+updateTeamSelect();
