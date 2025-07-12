@@ -235,3 +235,69 @@ if (localStorage.getItem('equipes')) {
   renderTeams();
   updateTeamSelect();
 }
+
+let ajudanteSelecionado = null;
+let equipeOrigemIndex = null;
+
+function openTrocarModalVisual() {
+  const container = document.getElementById('trocarVisualContainer');
+  container.innerHTML = ''; // limpa tudo
+
+  equipes.forEach((equipe, index) => {
+    const equipeDiv = document.createElement('div');
+    equipeDiv.className = 'equipe-box';
+    equipeDiv.dataset.index = index;
+
+    const titulo = document.createElement('h3');
+    titulo.textContent = equipe.motorista;
+    equipeDiv.appendChild(titulo);
+
+    equipe.ajudantes.forEach(ajudante => {
+      const bloco = document.createElement('div');
+      bloco.className = 'ajudante-bloco';
+      bloco.textContent = ajudante;
+
+      bloco.addEventListener('click', () => {
+        // Se já selecionado, desmarca
+        if (ajudanteSelecionado === ajudante) {
+          ajudanteSelecionado = null;
+          equipeOrigemIndex = null;
+          document.querySelectorAll('.ajudante-bloco').forEach(b => b.classList.remove('selecionado'));
+        } else {
+          ajudanteSelecionado = ajudante;
+          equipeOrigemIndex = index;
+          document.querySelectorAll('.ajudante-bloco').forEach(b => b.classList.remove('selecionado'));
+          bloco.classList.add('selecionado');
+        }
+      });
+
+      equipeDiv.appendChild(bloco);
+    });
+
+    equipeDiv.addEventListener('click', () => {
+      if (ajudanteSelecionado !== null && equipeOrigemIndex !== null && index !== equipeOrigemIndex) {
+        const equipeOrigem = equipes[equipeOrigemIndex];
+        const equipeDestino = equipes[index];
+
+        // Remover da equipe de origem
+        equipeOrigem.ajudantes = equipeOrigem.ajudantes.filter(a => a !== ajudanteSelecionado);
+        // Adicionar à equipe de destino
+        equipeDestino.ajudantes.push(ajudanteSelecionado);
+
+        // Limpar seleção
+        ajudanteSelecionado = null;
+        equipeOrigemIndex = null;
+
+        // Atualizar interface
+        renderTeams();
+        openTrocarModalVisual(); // recarrega o modal atualizado
+        saveToLocalStorage();
+      }
+    });
+
+    container.appendChild(equipeDiv);
+  });
+
+  openModal('trocarModalVisual');
+}
+
