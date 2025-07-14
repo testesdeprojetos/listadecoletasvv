@@ -61,26 +61,25 @@
 
 <button onclick="limparTudo()">Limpar Tudo</button>
 
-<!-- Modal: Adicionar Equipe -->
+<!-- Modal para adicionar equipe -->
 <div id="teamModal" class="modal">
   <div class="modal-content">
-    <h2>Adicionar Nova Equipe</h2>
+    <span class="close" onclick="closeModal('teamModal')">&times;</span>
+    <h3>Adicionar Equipe</h3>
 
+    <!-- Motorista -->
     <label for="motorista">Motorista:</label>
     <select id="motorista"></select>
-    <label><input type="checkbox" id="outroMotoristaCheck"> Outro</label>
-    <input type="text" id="outroMotorista" placeholder="Digite o nome" style="display: none;">
+    <input type="text" id="motoristaOutro" placeholder="Digite o nome do motorista" style="display:none;">
 
-    <hr>
-
+    <!-- Ajudantes -->
     <div id="ajudantes"></div>
-    <label><input type="checkbox" id="outroAjudanteCheck"> Outro</label>
-    <input type="text" id="outroAjudante" placeholder="Digite o nome" style="display: none;">
 
     <button onclick="addTeam()">Salvar Equipe</button>
-    <button onclick="closeModal('teamModal')">Cancelar</button>
+    <button onclick="closeModal('teamModal')">Fechar</button>
   </div>
 </div>
+
 
 <!-- Modal: Alterar Equipe Visual -->
 <div id="trocarModalVisual" class="modal">
