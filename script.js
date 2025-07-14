@@ -1,7 +1,6 @@
 // ===== URLs da planilha do Google Sheets =====
-const URL_MOTORISTAS = "https://docs.google.com/spreadsheets/d/12WODF9lWXjb1SDYeWN1lG0v1mxK2R4g-z-aCVHb2NMo/gviz/tq?tqx=out:json&tq=SELECT+A&sheet=Motoristas";
-const URL_AJUDANTES = "https://docs.google.com/spreadsheets/d/12WODF9lWXjb1SDYeWN1lG0v1mxK2R4g-z-aCVHb2NMo/gviz/tq?tqx=out:json&tq=SELECT+A&sheet=Ajudantes";
-
+const URL_MOTORISTAS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR3NUMEPqhTxi5kCMW6kDV4stJyqhMyni_mRTvGLEZHJJCO7BIJ0Hk_dcjljp9L_ZOwqy_XLxbuvg8m/gviz/tq?sheet=Motoristas&tq=select%20A";
+const URL_AJUDANTES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR3NUMEPqhTxi5kCMW6kDV4stJyqhMyni_mRTvGLEZHJJCO7BIJ0Hk_dcjljp9L_ZOwqy_XLxbuvg8m/gviz/tq?sheet=Ajudantes&tq=select%20A";
 
 // ===== Variáveis globais =====
 let motoristas = [];
@@ -28,45 +27,18 @@ async function carregarLista(url) {
 }
 
 async function carregarDados() {
-  const botaoEquipe = document.getElementById('botaoAdicionarEquipe');
-
-  try {
-    const [dadosMotoristas, dadosAjudantes] = await Promise.all([
-      carregarLista(URL_MOTORISTAS),
-      carregarLista(URL_AJUDANTES)
-    ]);
-
-    motoristas = dadosMotoristas;
-    ajudantes = dadosAjudantes;
-
-    if (motoristas.length === 0 || ajudantes.length === 0) {
-      alert('Erro ao carregar dados da planilha. Verifique se os dados estão preenchidos corretamente.');
-    } else {
-      renderMotoristas();
-      renderAjudantes();
-    }
-
-  } catch (error) {
-    console.error("Erro ao carregar dados das planilhas:", error);
-    alert('Falha ao carregar dados da planilha. Você pode digitar os nomes manualmente.');
-  }
-
-  // SEMPRE mostra o botão, mesmo se der erro
-  if (botaoEquipe) botaoEquipe.style.display = 'inline-block';
+  motoristas = await carregarLista(URL_MOTORISTAS);
+  ajudantes = await carregarLista(URL_AJUDANTES);
+  renderMotoristas();
+  renderAjudantes();
 }
-
-
 carregarDados();
 
-console.log("Motoristas carregados:", motoristas);
-console.log("Ajudantes carregados:", ajudantes);
-
-
+// ===== Renderização =====
 function renderMotoristas() {
   const select = document.getElementById('motorista');
-  if (!select) return;
-
   select.innerHTML = '';
+
   motoristas.forEach(m => {
     const opt = document.createElement('option');
     opt.value = m;
@@ -76,25 +48,17 @@ function renderMotoristas() {
 
   const optOutro = document.createElement('option');
   optOutro.value = 'outro';
-  optOutro.textContent = 'Outro (digitar manualmente)';
+  optOutro.textContent = 'Outro';
   select.appendChild(optOutro);
 
   select.onchange = () => {
-  const outroInput = document.getElementById('motoristaOutro');
-  if (outroInput) outroInput.style.display = select.value === 'outro' ? 'block' : 'none';
+    document.getElementById('motoristaOutro').style.display = select.value === 'outro' ? 'block' : 'none';
   };
-
 }
-
-
 
 function renderAjudantes() {
   const div = document.getElementById('ajudantes');
-  if (!div) return;
-
   div.innerHTML = '';
-
-  // Lista os ajudantes da planilha
   ajudantes.forEach(a => {
     const label = document.createElement('label');
     label.innerHTML = `<input type="checkbox" value="${a}"> ${a}`;
@@ -102,72 +66,40 @@ function renderAjudantes() {
     div.appendChild(document.createElement('br'));
   });
 
-  // Adiciona a opção "Outro" (sem value!)
   div.insertAdjacentHTML('beforeend', `
-    <label><input type="checkbox" id="outroAjudanteCheck"> Outro (digitar manualmente)</label><br>
-    <input type="text" id="outroAjudante" placeholder="Nome do ajudante" style="display:none;">
+    <label><input type="checkbox" id="ajudanteOutroCheck"> Outro</label><br>
+    <input type="text" id="ajudanteOutroInput" placeholder="Nome do ajudante" style="display:none;">
   `);
 
-  // Exibe ou esconde o campo de texto ao marcar "Outro"
-  const checkOutro = document.getElementById('outroAjudanteCheck');
-  const inputOutro = document.getElementById('outroAjudante');
-  if (checkOutro && inputOutro) {
-    checkOutro.addEventListener('change', () => {
-      inputOutro.style.display = checkOutro.checked ? 'block' : 'none';
-    });
-  }
+  document.getElementById('ajudanteOutroCheck').addEventListener('change', (e) => {
+    document.getElementById('ajudanteOutroInput').style.display = e.target.checked ? 'block' : 'none';
+  });
 }
 
-
-
-
+// ===== Adicionar Equipe =====
 function addTeam() {
-  const motoristaSelect = document.getElementById('motorista');
-  const motoristaOutroInput = document.getElementById('motoristaOutro');
+  const motoristaSelecionado = document.getElementById('motorista').value;
+  const motoristaOutro = document.getElementById('motoristaOutro').value.trim();
+  const motorista = motoristaSelecionado === 'outro' ? motoristaOutro : motoristaSelecionado;
 
-  let motorista = motoristaSelect.value;
-  if (motorista === 'outro') {
-    motorista = motoristaOutroInput.value.trim();
-    if (!motorista) {
-      alert("Digite o nome do motorista.");
-      return;
-    }
-  } else if (!motorista) {
-    alert("Selecione um motorista.");
-    return;
+  const ajudantesSelecionados = Array.from(document.querySelectorAll('#ajudantes input[type="checkbox"]:checked')).map(el => el.value);
+  if (document.getElementById('ajudanteOutroCheck').checked) {
+    const nome = document.getElementById('ajudanteOutroInput').value.trim();
+    if (nome) ajudantesSelecionados.push(nome);
   }
 
-  // Coleta ajudantes selecionados
-  const checkboxes = document.querySelectorAll('#ajudantes input[type="checkbox"]:checked');
-  const ajudantesSelecionados = Array.from(checkboxes)
-    .filter(el => el.id !== 'outroAjudanteCheck')
-    .map(el => el.value);
+  if (!motorista || ajudantesSelecionados.length === 0) return alert("Selecione um motorista e pelo menos um ajudante.");
 
-  // Verifica se "Outro" foi digitado
-  const outroAjudanteCheck = document.getElementById('outroAjudanteCheck');
-  const outroAjudanteInput = document.getElementById('outroAjudante');
-  if (outroAjudanteCheck?.checked && outroAjudanteInput?.value.trim()) {
-    ajudantesSelecionados.push(outroAjudanteInput.value.trim());
-  }
-
-  if (!motorista || ajudantesSelecionados.length === 0) {
-    return alert("Selecione um motorista e pelo menos um ajudante.");
-  }
-
-  // Verifica duplicatas
   const usados = equipes.flatMap(eq => [eq.motorista, ...eq.ajudantes]);
   const duplicado = [motorista, ...ajudantesSelecionados].find(p => usados.includes(p));
   if (duplicado) return alert(`Pessoa já usada: ${duplicado}`);
 
-  // Adiciona a nova equipe
   equipes.push({ motorista, ajudantes: ajudantesSelecionados, empresas: [] });
   closeModal('teamModal');
   renderTeams();
   updateTeamSelect();
   saveToLocalStorage();
 }
-
-
 
 // ===== Renderizar Equipes =====
 function renderTeams() {
@@ -290,28 +222,18 @@ function saveEmpresa() {
 // ===== Utilidades =====
 function openModal(id) {
   if (id === 'teamModal') {
-
-  // Garantir que o campo de ajudante outro apareça quando marcado
-  const checkOutro = document.getElementById('outroAjudanteCheck');
-  const inputOutro = document.getElementById('outroAjudante');
-  if (checkOutro && inputOutro) {
-    inputOutro.style.display = checkOutro.checked ? 'block' : 'none';
-    checkOutro.addEventListener('change', () => {
-      inputOutro.style.display = checkOutro.checked ? 'block' : 'none';
-    });
+    if (motoristas.length === 0 || ajudantes.length === 0) {
+      alert('Carregando motoristas e ajudantes... aguarde um instante e tente novamente.');
+      return;
+    }
   }
-
-  // Motorista "Outro"
-  const motoristaSelect = document.getElementById('motorista');
-  const motoristaOutro = document.getElementById('motoristaOutro');
-  if (motoristaSelect && motoristaOutro) {
-    motoristaOutro.style.display = motoristaSelect.value === 'outro' ? 'block' : 'none';
-  }
-}
 
   document.getElementById(id).style.display = 'flex';
-}
 
+  if (id === 'empresaModal') {
+    setTimeout(() => document.getElementById('nomeEmpresa').focus(), 100);
+  }
+}
 
 function closeModal(id) {
   document.getElementById(id).style.display = 'none';
