@@ -37,17 +37,20 @@
   </div>
 </div>
 
-<!-- Modal para trocar integrantes -->
-<div id="trocarModal" class="modal">
+<!-- Modal: Alterar Equipe Visual -->
+<div id="trocarModalVisual" class="modal">
   <div class="modal-content">
-    <span class="close" onclick="closeModal('trocarModal')">&times;</span>
-    <h3>Trocar Integrante de Equipe</h3>
-    <select id="pessoaTroca"></select>
-    <select id="novaEquipe"></select>
-    <button onclick="moverIntegrante()">Mover</button>
-    <button onclick="closeModal('trocarModal')">Fechar</button>
+    <h2>Alterar Ajudantes entre Equipes</h2>
+    <p>Selecione um ajudante para mover, depois clique na equipe de destino.</p>
+
+    <div id="equipesTrocaVisual" class="troca-container">
+      <!-- Gerado dinamicamente -->
+    </div>
+
+    <button onclick="closeModal('trocarModalVisual')">Fechar</button>
   </div>
 </div>
+
 
 <!-- Modal para confirmação de exclusão de equipe -->
 <div id="confirmDeleteModal" class="modal">

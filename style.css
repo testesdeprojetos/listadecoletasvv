@@ -1,4 +1,6 @@
-/* Estilo principal */
+/* ===========================
+   Estilo Global
+=========================== */
 body {
   font-family: Arial, sans-serif;
   padding: 20px;
@@ -8,12 +10,10 @@ body {
   transition: background-color 0.3s, color 0.3s;
 }
 
-/* Título */
 h1 {
   text-align: center;
 }
 
-/* Botões */
 button {
   padding: 14px 20px;
   margin: 6px;
@@ -29,7 +29,29 @@ button:hover {
   background-color: #0056b3;
 }
 
-/* Seções de Equipe e Empresa */
+input[type="text"], select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 6px;
+  margin-bottom: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 17px;
+}
+
+textarea {
+  width: 100%;
+  height: 250px;
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 17px;
+}
+
+/* ===========================
+   Equipes e Empresas
+=========================== */
 #teams {
   margin-top: 20px;
 }
@@ -50,7 +72,6 @@ button:hover {
   font-size: 20px;
 }
 
-/* Alinhamento nome da empresa + botão excluir */
 .empresa {
   margin-left: 20px;
   margin-top: 10px;
@@ -59,26 +80,15 @@ button:hover {
   align-items: center;
 }
 
-/* Área de texto */
-textarea {
-  width: 100%;
-  height: 250px;
-  margin-top: 12px;
-  padding: 12px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  font-size: 17px;
-}
-
-/* Modais */
+/* ===========================
+   Modais
+=========================== */
 .modal {
   display: none;
   position: fixed;
   z-index: 1000;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
   background: rgba(0,0,0,0.6);
   justify-content: center;
   align-items: center;
@@ -89,7 +99,7 @@ textarea {
   padding: 25px;
   border-radius: 10px;
   width: 90%;
-  max-width: 450px;
+  max-width: 800px;
   position: relative;
   animation: fadeIn 0.3s ease;
   font-size: 18px;
@@ -100,55 +110,15 @@ textarea {
   to {opacity: 1; transform: translateY(0);}
 }
 
-/* Botão fechar modal */
 .close {
   float: right;
   font-size: 28px;
   cursor: pointer;
 }
 
-/* Inputs e selects */
-input[type="text"], select {
-  width: 100%;
-  padding: 10px;
-  margin-top: 6px;
-  margin-bottom: 12px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 17px;
-}
-
-/* Tema escuro */
-[data-theme="dark"] {
-  background-color: #1e1e1e;
-  color: #e0e0e0;
-}
-
-[data-theme="dark"] .team {
-  background: #2c2c2c;
-  color: #555;
-  border-color: #444;
-}
-
-[data-theme="dark"] .modal-content {
-  background: #2c2c2c;
-  color: #e0e0e0;
-}
-
-[data-theme="dark"] textarea {
-  background-color: #2c2c2c;
-  color: #e0e0e0;
-  border: 1px solid #555;
-}
-
-[data-theme="dark"] input[type="text"], 
-[data-theme="dark"] select {
-  background-color: #333;
-  color: #e0e0e0;
-  border: 1px solid #555;
-}
-
-/* Estilo específico para o botão de excluir empresa */
+/* ===========================
+   Botão excluir empresa
+=========================== */
 #deleteButton {
   font-size: 12px;
   padding: 4px 8px;
@@ -161,62 +131,79 @@ input[type="text"], select {
   text-align: center;
   margin-left: 10px;
 }
-
 #deleteButton:hover {
   background-color: #c82333;
 }
 
-/* Modal layout básico */
-.modal {
-  display: none;
-  position: fixed;
-  z-index: 999;
-  left: 0; top: 0;
-  width: 100%; height: 100%;
-  background: rgba(0,0,0,0.5);
-  align-items: center;
-  justify-content: center;
-}
-.modal-content {
-  background: white;
-  padding: 20px;
-  max-width: 800px;
-  width: 90%;
-  border-radius: 8px;
+/* ===========================
+   Tema Escuro
+=========================== */
+[data-theme="dark"] {
+  background-color: #1e1e1e;
+  color: #e0e0e0;
 }
 
-/* Estilo visual dos blocos de equipes */
+[data-theme="dark"] .team {
+  background: #2c2c2c;
+  color: #555;
+  border-color: #444;
+}
+
+[data-theme="dark"] .modal-content,
+[data-theme="dark"] textarea {
+  background: #2c2c2c;
+  color: #e0e0e0;
+  border: 1px solid #555;
+}
+
+[data-theme="dark"] input[type="text"],
+[data-theme="dark"] select {
+  background-color: #333;
+  color: #e0e0e0;
+  border: 1px solid #555;
+}
+
+/* ===========================
+   Troca de Ajudantes (Visual)
+=========================== */
 .troca-container {
   display: flex;
   gap: 20px;
   flex-wrap: wrap;
-  justify-content: space-between;
-}
-.equipe-box {
-  border: 1px solid #aaa;
-  border-radius: 8px;
-  padding: 10px;
-  width: 30%;
-}
-.equipe-box h3 {
-  margin-top: 0;
-  font-size: 16px;
-  text-align: center;
-}
-.ajudante-bloco {
-  background: #f0f0f0;
-  padding: 6px 10px;
-  margin: 4px;
-  border-radius: 4px;
-  cursor: pointer;
-  text-align: center;
-  transition: background 0.2s, opacity 0.2s;
-}
-.ajudante-bloco:hover {
-  background: #dcdcdc;
-}
-.ajudante-bloco.selecionado {
-  opacity: 0.5;
-  background: #ffe9a1;
+  margin-top: 20px;
 }
 
+.blocoEquipe {
+  border: 1px solid #ccc;
+  padding: 10px;
+  min-width: 200px;
+  cursor: pointer;
+  border-radius: 6px;
+  background: #fafafa;
+}
+
+.blocoEquipe h4 {
+  margin: 0 0 10px 0;
+  font-size: 18px;
+  text-align: center;
+}
+
+.ajudante-btn {
+  display: inline-block;
+  background-color: #e0e0e0;
+  padding: 4px 8px;
+  margin: 2px;
+  border-radius: 4px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s, opacity 0.2s;
+}
+
+.ajudante-btn:hover {
+  background-color: #d0d0d0;
+}
+
+.ajudante-btn.selecionado {
+  background-color: #ffc107;
+  opacity: 0.6;
+}

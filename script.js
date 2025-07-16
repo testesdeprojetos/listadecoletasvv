@@ -207,8 +207,8 @@ function renderTeams() {
 
 // ===== Modal Visual: Trocar Ajudantes =====
 function abrirTrocaVisual() {
-  const modal = document.getElementById('trocarModalVisual');
-  modal.innerHTML = '';
+  const container = document.getElementById('equipesTrocaVisual');
+  container.innerHTML = '';
   ajudanteSelecionado = null;
 
   equipes.forEach((equipe, index) => {
@@ -217,22 +217,59 @@ function abrirTrocaVisual() {
     bloco.dataset.index = index;
 
     const titulo = document.createElement('h4');
-    titulo.textContent = equipe.motorista;
+    titulo.textContent = `Equipe ${index + 1}: ${equipe.motorista}`;
     bloco.appendChild(titulo);
 
-    equipe.ajudantes.forEach(aj => {
-      const span = document.createElement('span');
-      span.className = 'ajudante';
-      span.textContent = aj;
-      span.onclick = () => selecionarOuMoverAjudante(aj, index);
-      bloco.appendChild(span);
+    equipe.ajudantes.forEach(ajudante => {
+      const btn = document.createElement('span');
+      btn.className = 'ajudante-btn';
+      btn.textContent = ajudante;
+
+      btn.onclick = () => {
+        // Seleciona ajudante
+        document.querySelectorAll('.ajudante-btn').forEach(el => el.classList.remove('selecionado'));
+        btn.classList.add('selecionado');
+        ajudanteSelecionado = { nome: ajudante, equipeIndex: index };
+      };
+
+      bloco.appendChild(btn);
     });
 
-    modal.appendChild(bloco);
+    // Ao clicar na equipe de destino
+    bloco.onclick = (e) => {
+      // Evita que o clique em um ajudante dispare o clique do bloco
+      if (e.target.classList.contains('ajudante-btn')) return;
+
+      if (!ajudanteSelecionado) {
+        alert("Selecione um ajudante para mover.");
+        return;
+      }
+
+      const { nome, equipeIndex: origem } = ajudanteSelecionado;
+      const destino = index;
+
+      if (origem === destino) {
+        alert("Selecione uma equipe diferente.");
+        return;
+      }
+
+      // Remove e adiciona o ajudante
+      equipes[origem].ajudantes = equipes[origem].ajudantes.filter(a => a !== nome);
+      equipes[destino].ajudantes.push(nome);
+
+      // Atualiza e fecha
+      ajudanteSelecionado = null;
+      closeModal('trocarModalVisual');
+      renderTeams();
+      saveToLocalStorage();
+    };
+
+    container.appendChild(bloco);
   });
 
   openModal('trocarModalVisual');
 }
+
 
 function selecionarOuMoverAjudante(nome, equipeIndex) {
   if (!ajudanteSelecionado) {
