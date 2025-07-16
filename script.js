@@ -259,6 +259,7 @@ function abrirTrocaVisual() {
 
       // Atualiza e fecha
       ajudanteSelecionado = null;
+      closeModal('trocarModalVisual');
       renderTeams();
       saveToLocalStorage();
     };
