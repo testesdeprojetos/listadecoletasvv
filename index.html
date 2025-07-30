@@ -12,7 +12,7 @@
 <h1>Lista de Coletas</h1>
 
 <div>
-  <button id="botaoAdicionarEquipe" style="display:none;" onclick="openModal('teamModal')">Adicionar Equipe</button>
+  <button id="botaoAdicionarEquipe" style="display:none;" onclick="abrirModalEquipe()">Adicionar Equipe</button>
   <button onclick="openModal('empresaModal')">Adicionar Empresa</button>
   <button onclick="generateList()">Gerar Lista</button>
   <button id="toggleTheme" style="float:right">Alternar Tema</button>
@@ -21,6 +21,10 @@
 <div id="teams"></div>
 
 <textarea id="output" placeholder="Aqui aparecerá a lista gerada..."></textarea>
+
+<button onclick="limparTudo()">Limpar Tudo</button>
+
+<a target="_blank" href="https://docs.google.com/spreadsheets/d/12WODF9lWXjb1SDYeWN1lG0v1mxK2R4g-z-aCVHb2NMo/edit"><button id="sheet-btn">.</button></a>
 
 <!-- Modal para adicionar empresa -->
 <div id="empresaModal" class="modal">
@@ -37,20 +41,17 @@
   </div>
 </div>
 
-<!-- Modal: Alterar Equipe Visual -->
+<!-- Modal: Alterar Ajudantes entre Equipes -->
 <div id="trocarModalVisual" class="modal">
   <div class="modal-content">
     <h2>Alterar Ajudantes entre Equipes</h2>
     <p>Selecione um ajudante para mover, depois clique na equipe de destino.</p>
-
     <div id="equipesTrocaVisual" class="troca-container">
       <!-- Gerado dinamicamente -->
     </div>
-
     <button onclick="closeModal('trocarModalVisual')">Fechar</button>
   </div>
 </div>
-
 
 <!-- Modal para confirmação de exclusão de equipe -->
 <div id="confirmDeleteModal" class="modal">
@@ -62,42 +63,23 @@
   </div>
 </div>
 
-<button onclick="limparTudo()">Limpar Tudo</button>
-
-<!-- Modal para adicionar equipe -->
+<!-- Modal Adicionar/Editar Equipe -->
 <div id="teamModal" class="modal">
   <div class="modal-content">
     <span class="close" onclick="closeModal('teamModal')">&times;</span>
-    <h3>Adicionar Equipe</h3>
-
-    <!-- Motorista -->
+    <h3 id="teamModalTitle">Adicionar Nova Equipe</h3>
+    
     <label for="motorista">Motorista:</label>
     <select id="motorista"></select>
-    <input type="text" id="motoristaOutro" placeholder="Digite o nome do motorista" style="display:none;">
+    <input type="text" id="motoristaOutro" placeholder="Digite o nome do motorista" style="display:none; margin-top:5px; width: 100%;">
 
-    <!-- Ajudantes -->
+    <h4>Ajudantes:</h4>
     <div id="ajudantes"></div>
 
-    <button onclick="addTeam()">Salvar Equipe</button>
+    <button id="teamModalSaveBtn" onclick="salvarEquipe()">Salvar</button>
     <button onclick="closeModal('teamModal')">Fechar</button>
   </div>
 </div>
-
-
-<!-- Modal: Alterar Equipe Visual -->
-<div id="trocarModalVisual" class="modal">
-  <div class="modal-content">
-    <h2>Alterar Ajudantes entre Equipes</h2>
-    <p>Selecione um ajudante para mover, depois clique na equipe de destino.</p>
-
-    <div id="equipesTrocaVisual" class="troca-container">
-      <!-- Gerado dinamicamente -->
-    </div>
-
-    <button onclick="closeModal('trocarModalVisual')">Fechar</button>
-  </div>
-</div>
-
 
 <script src="./script.js"></script>
 </body>

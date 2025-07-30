@@ -228,3 +228,12 @@ textarea {
   background-color: #ffc107;
   opacity: 0.6;
 }
+
+#sheet-btn {
+  background-color: #ccc;
+  opacity: 10%;
+  min-width: 10px;
+  height: 10px;
+  float: right;
+  text-align: center;
+}
