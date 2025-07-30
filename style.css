@@ -80,6 +80,27 @@ textarea {
   align-items: center;
 }
 
+/* Estilo para indicar que é arrastável */
+.empresa[draggable="true"] {
+  cursor: grab;
+  transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.empresa[draggable="true"]:active {
+  cursor: grabbing;
+}
+
+/* Destaque visual durante o arrasto */
+.empresa.drag-over {
+  background-color: #e6f7ff;
+  box-shadow: 0 0 8px rgba(0, 123, 255, 0.5);
+}
+
+.empresa.dragging {
+  opacity: 0.5;
+}
+
+
 /* ===========================
    Modais
 =========================== */

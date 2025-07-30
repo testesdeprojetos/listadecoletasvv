@@ -8,6 +8,7 @@ let motoristas = [];
 let ajudantes = [];
 let equipes = [];
 let ajudanteSelecionado = null;
+let dragData = null;
 
 // ===== Tema =====
 if (localStorage.getItem('theme')) {
@@ -192,11 +193,16 @@ function renderTeams() {
       if (emp.peso) texto += ` ${emp.peso}KG`;
       if (emp.observacao) texto += ` (${emp.observacao})`;
       empresasDiv.innerHTML += `
-        <div class="empresa">
-          <p contenteditable="true">${texto}</p>
-          <button onclick="deleteEmpresa(${i}, ${j})">Excluir</button>
-        </div>
-      `;
+        <div class="empresa" 
+          draggable="true"
+          ondragstart="dragStart(event, ${i}, ${j})" 
+          ondragover="dragOver(event)" 
+          ondragleave="dragLeave(event)"
+          ondrop="drop(event, ${i}, ${j})">
+        <p contenteditable="true">${texto}</p>
+        <button onclick="deleteEmpresa(${i}, ${j})">Excluir</button>
+      </div>
+    `;
     });
 
     container.appendChild(header);
@@ -204,6 +210,44 @@ function renderTeams() {
     div.appendChild(container);
   });
 }
+
+// ===== Drag & Drop para reordenar empresas (inclusive entre equipes) =====
+function dragStart(event, equipeIndex, empresaIndex) {
+  dragData = { equipeIndex, empresaIndex };
+  event.dataTransfer.effectAllowed = 'move';
+  event.currentTarget.classList.add('dragging');
+}
+
+function dragOver(event) {
+  event.preventDefault(); // Necessário para permitir o drop
+  event.currentTarget.classList.add('drag-over');
+}
+
+function dragLeave(event) {
+  event.currentTarget.classList.remove('drag-over');
+}
+
+function drop(event, equipeIndex, empresaIndex) {
+  event.preventDefault();
+  event.currentTarget.classList.remove('drag-over');
+
+  if (!dragData) return;
+
+  const { equipeIndex: origemEquipe, empresaIndex: origemEmpresa } = dragData;
+  const item = equipes[origemEquipe].empresas.splice(origemEmpresa, 1)[0]; // remove do original
+
+  // Ajustar o índice caso arraste dentro da mesma equipe e abaixo do item original
+  if (origemEquipe === equipeIndex && origemEmpresa < empresaIndex) {
+    empresaIndex--;
+  }
+
+  equipes[equipeIndex].empresas.splice(empresaIndex, 0, item); // insere no novo local
+
+  dragData = null;
+  renderTeams();
+  saveToLocalStorage();
+}
+
 
 // ===== Modal Visual: Trocar Ajudantes =====
 function abrirTrocaVisual() {
